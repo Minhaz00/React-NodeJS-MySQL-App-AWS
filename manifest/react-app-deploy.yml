@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-app
+  template:
+    metadata:
+      labels:
+        app: react-app
+    spec:
+      containers:
+      - name: react-app
+        image: minhaz71/react-app-aws-eks:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: AXIOS_BASE_URL
+          value: http://nodejs-app:5000     
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: react-app
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+
+
+

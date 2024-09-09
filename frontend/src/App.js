@@ -6,7 +6,7 @@ function App() {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({ username: '', email: '' });
   const [selectedUser, setSelectedUser] = useState(null);
-  axios.defaults.baseURL = 'http://localhost:5000';
+  axios.defaults.baseURL = process.env.AXIOS_BASE_URL;
 
   useEffect(() => {
     fetchUsers();
