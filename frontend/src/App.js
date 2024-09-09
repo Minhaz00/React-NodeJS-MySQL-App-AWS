@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './App.css';
 
 function App() {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({ username: '', email: '' });
   const [selectedUser, setSelectedUser] = useState(null);
-  axios.defaults.baseURL = process.env.AXIOS_BASE_URL;
-  console.log('axios.defaults.baseURL:', axios.defaults.baseURL);
 
   useEffect(() => {
-    fetchUsers();
+    const apiurl = process.env.REACT_APP_API_BASE_URL; // Changed to REACT_APP_API_BASE_URL for consistency with React best practices
+    console.log('apiurl:', apiurl);
+    fetchUsers(apiurl);
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (apiurl) => {
     try {
-      const response = await axios.get('/users');
-      setUsers(response.data);
+      const response = await fetch(`${apiurl}/users`);
+      const data = await response.json();
+      setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
   };
 
   const handleCreateUser = async () => {
+    const apiurl = process.env.REACT_APP_API_BASE_URL; // Fetch the API URL here again
     try {
-      await axios.post('/users', newUser);
-      fetchUsers();
+      await fetch(`${apiurl}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
+      });
+      fetchUsers(apiurl);
       setNewUser({ username: '', email: '' });
     } catch (error) {
       console.error('Error creating user:', error);
@@ -33,9 +40,16 @@ function App() {
   };
 
   const handleUpdateUser = async () => {
+    const apiurl = process.env.REACT_APP_API_BASE_URL; // Fetch the API URL here again
     try {
-      await axios.put(`/users/${selectedUser.id}`, selectedUser);
-      fetchUsers();
+      await fetch(`${apiurl}/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedUser),
+      });
+      fetchUsers(apiurl);
       setSelectedUser(null);
     } catch (error) {
       console.error('Error updating user:', error);
@@ -43,9 +57,12 @@ function App() {
   };
 
   const handleDeleteUser = async (id) => {
+    const apiurl = process.env.REACT_APP_API_BASE_URL; // Fetch the API URL here again
     try {
-      await axios.delete(`/users/${id}`);
-      fetchUsers();
+      await fetch(`${apiurl}/users/${id}`, {
+        method: 'DELETE',
+      });
+      fetchUsers(apiurl);
     } catch (error) {
       console.error('Error deleting user:', error);
     }
@@ -106,4 +123,3 @@ function App() {
 }
 
 export default App;
-
