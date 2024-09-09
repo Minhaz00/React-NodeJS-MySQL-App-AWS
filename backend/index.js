@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const db = require('./models');
 const userRoutes = require('./routes/user');
 const homeRoutes = require('./routes/home'); 
-var cors = require('cors');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
