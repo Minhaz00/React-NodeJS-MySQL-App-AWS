@@ -7,65 +7,57 @@ function App() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    const apiurl = process.env.REACT_APP_API_BASE_URL; // Changed to REACT_APP_API_BASE_URL for consistency with React best practices
+    const apiurl = process.env.REACT_APP_API_BASE_URL;
     console.log('apiurl:', apiurl);
     fetchUsers(apiurl);
   }, []);
 
-  const fetchUsers = async (apiurl) => {
-    try {
-      const response = await fetch(`${apiurl}/users`);
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
+  const fetchUsers = (apiurl) => {
+    fetch(`${apiurl}/users`)
+      .then((response) => response.json())
+      .then((data) => setUsers(data))
+      .catch((error) => console.error('Error fetching users:', error));
   };
 
-  const handleCreateUser = async () => {
-    const apiurl = process.env.REACT_APP_API_BASE_URL; // Fetch the API URL here again
-    try {
-      await fetch(`${apiurl}/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
-      fetchUsers(apiurl);
-      setNewUser({ username: '', email: '' });
-    } catch (error) {
-      console.error('Error creating user:', error);
-    }
+  const handleCreateUser = () => {
+    const apiurl = process.env.REACT_APP_API_BASE_URL;
+    fetch(`${apiurl}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newUser),
+    })
+      .then(() => {
+        fetchUsers(apiurl);
+        setNewUser({ username: '', email: '' });
+      })
+      .catch((error) => console.error('Error creating user:', error));
   };
 
-  const handleUpdateUser = async () => {
-    const apiurl = process.env.REACT_APP_API_BASE_URL; // Fetch the API URL here again
-    try {
-      await fetch(`${apiurl}/users/${selectedUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(selectedUser),
-      });
-      fetchUsers(apiurl);
-      setSelectedUser(null);
-    } catch (error) {
-      console.error('Error updating user:', error);
-    }
+  const handleUpdateUser = () => {
+    const apiurl = process.env.REACT_APP_API_BASE_URL;
+    fetch(`${apiurl}/users/${selectedUser.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(selectedUser),
+    })
+      .then(() => {
+        fetchUsers(apiurl);
+        setSelectedUser(null);
+      })
+      .catch((error) => console.error('Error updating user:', error));
   };
 
-  const handleDeleteUser = async (id) => {
-    const apiurl = process.env.REACT_APP_API_BASE_URL; // Fetch the API URL here again
-    try {
-      await fetch(`${apiurl}/users/${id}`, {
-        method: 'DELETE',
-      });
-      fetchUsers(apiurl);
-    } catch (error) {
-      console.error('Error deleting user:', error);
-    }
+  const handleDeleteUser = (id) => {
+    const apiurl = process.env.REACT_APP_API_BASE_URL;
+    fetch(`${apiurl}/users/${id}`, {
+      method: 'DELETE',
+    })
+      .then(() => fetchUsers(apiurl))
+      .catch((error) => console.error('Error deleting user:', error));
   };
 
   return (

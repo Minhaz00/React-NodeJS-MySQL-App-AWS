@@ -19,7 +19,7 @@ spec:
         - containerPort: 3000
         env:
         - name: REACT_APP_API_BASE_URL
-          value: "http://nodejs-app.default.svc.cluster.local"    
+          value: http://a293d8856357f4a7581a41e00f12dd4a-1698539534.ap-southeast-1.elb.amazonaws.com:5000
 
 ---
 apiVersion: v1
@@ -27,15 +27,13 @@ kind: Service
 metadata:
   name: react-app
 spec:
-  # type: LoadBalancer
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: react-app
   ports:
     - protocol: TCP
-      port: 3000
+      port: 80
       targetPort: 3000
-      nodePort: 30008
 
 
 
