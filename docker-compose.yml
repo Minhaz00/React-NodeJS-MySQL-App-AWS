@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: mysql:latest
@@ -15,8 +17,8 @@ services:
       timeout: 3s
       retries: 2
 
-  app:
-    build: .
+  backend:
+    build: ./backend
     ports:
       - "5000:5000"
     environment:
@@ -29,9 +31,23 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - .:/app
+      - ./backend:/app
       - /app/node_modules
     command: npm start
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_started
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:5000
+    command: npm start
+
 volumes:
-  db_data:  
+  db_data:
