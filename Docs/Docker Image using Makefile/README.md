@@ -5,7 +5,7 @@ In this lab, we will guide you through the creation of a basic full-stack applic
 - The **frontend** is built using React.
 - The **backend** is built using Node.js with Express.
 - Both the frontend and backend are `dockerized` using Docker.
-- The `images` are built and pushed to DockerHub using a `Makefile`.
+- The `Images` are built and pushed to DockerHub using a `Makefile`.
 
 Overall Project directory:
 
@@ -52,7 +52,7 @@ This will create a `package.json` file.
 Install `express` to handle server routing.
 
 ```bash
-npm install express
+npm install express cors
 ```
 
 ### 1.4. Create `index.js` for the Backend
@@ -71,7 +71,7 @@ const os = require('os');
 const cors = require('cors');
 
 const app = express();
-const PORT = 5000;
+const PORT = 4000;
 
 app.use(cors()); // Enable CORS for all routes
 
@@ -110,7 +110,7 @@ RUN npm install
 COPY . .
 
 # Expose the port that your app will run on
-EXPOSE 5000
+EXPOSE 4000
 
 # Start the server
 CMD ["node", "index.js"]
@@ -173,30 +173,33 @@ touch Dockerfile
 Add the following content:
 
 ```Dockerfile
-# Use the official Node.js image as the base image
-FROM node:14
+# Stage 1: Build the React app
+FROM node:16-alpine AS build
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the package.json and install dependencies
+# Copy package.json and package-lock.json
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the app files
+# Copy the rest of the code
 COPY . .
 
 # Build the React app for production
 RUN npm run build
 
-# Use an Nginx server to serve the built React app
+# Stage 2: Serve the React app
 FROM nginx:alpine
-COPY --from=0 /app/build /usr/share/nginx/html
 
-# Expose port 80 for the web server
+# Copy the built app to the NGINX container
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80 to access the React app
 EXPOSE 80
 
-# Start Nginx server
+# Start NGINX
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
@@ -216,7 +219,7 @@ In the `my-fullstack-app` directory, create a `Makefile`:
 touch Makefile
 ```
 
-Now, we will write the Makefile step by step:
+### Writing rite the Makefile step by step:
 
 A `Makefile` is a simple text file that contains a set of rules used to automate the build and deployment process. It is often used with `make`, a build automation tool, to execute tasks like compiling programs, running tests, or building Docker images.
 
@@ -280,11 +283,6 @@ all-frontend: build-frontend tag-frontend push-frontend
 ```
 - **`all-frontend` Target**: This is a combined target that calls the `build-frontend`, `tag-frontend`, and `push-frontend` targets sequentially, effectively building, tagging, and pushing the Docker image in one command.
 
-```makefile
-# Clean up local frontend images (optional)
-clean-frontend:
-	docker rmi $(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG) $(DOCKER_USERNAME)/$(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG)
-```
 - **`clean-frontend` Target**: This target deletes (`rmi`) the Docker images (both local and tagged versions) for the frontend. It's useful for freeing up space.
 
 #### Backend Section
@@ -293,7 +291,7 @@ The backend section is nearly identical to the frontend section, but it operates
 
 ```makefile
 # Backend Variables
-BACKEND_IMAGE_NAME = nodejs-app-aws-eks
+BACKEND_IMAGE_NAME = your-backend-image-name
 BACKEND_TAG = latest
 ```
 - Backend-specific variables: Here, `nodejs-app-aws-eks` is used as the backend image name.
@@ -310,19 +308,8 @@ push-backend:
     docker push $(DOCKER_USERNAME)/$(BACKEND_IMAGE_NAME):$(BACKEND_TAG)
 
 all-backend: build-backend tag-backend push-backend
-
-clean-backend:
-    docker rmi $(BACKEND_IMAGE_NAME):$(BACKEND_TAG) $(DOCKER_USERNAME)/$(BACKEND_IMAGE_NAME):$(BACKEND_TAG)
 ```
 - Backend build, tag, push, and clean targets work the same way as the frontend targets but for the backend image.
-
-#### Combined Targets
-
-```makefile
-# Clean up both frontend and backend images
-clean: clean-frontend clean-backend
-```
-- **`clean` Target**: This target combines `clean-frontend` and `clean-backend`, allowing you to clean up Docker images for both frontend and backend in one command.
 
 ```makefile
 # Run all for both frontend and backend in parallel
@@ -348,61 +335,35 @@ all: all-frontend all-backend
 ```Makefile
 # Variables
 DOCKER_USERNAME = your-dockerhub-username
-
-# Frontend Variables
 FRONTEND_IMAGE_NAME = React-frontend
 FRONTEND_TAG = latest
-
-# Backend Variables
 BACKEND_IMAGE_NAME = Nodejs-backend
 BACKEND_TAG = latest
 
-# Frontend Commands
-
-# Build the Docker image for the frontend
 build-frontend:
 	docker build -t $(FRONTEND_IMAGE_NAME) ./frontend
 
-# Tag the Docker image for the frontend
 tag-frontend:
 	docker tag $(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG) $(DOCKER_USERNAME)/$(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG)
 
-# Push the Docker image for the frontend
 push-frontend:
 	docker push $(DOCKER_USERNAME)/$(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG)
 
-# Combined command to build, tag, and push the frontend Docker image
 all-frontend: build-frontend tag-frontend push-frontend
 
-# Clean up local frontend images (optional)
-clean-frontend:
-	docker rmi $(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG) $(DOCKER_USERNAME)/$(FRONTEND_IMAGE_NAME):$(FRONTEND_TAG)
-
-# Backend Commands
-
-# Build the Docker image for the backend
 build-backend:
 	docker build -t $(BACKEND_IMAGE_NAME) ./backend
 
-# Tag the Docker image for the backend
 tag-backend:
 	docker tag $(BACKEND_IMAGE_NAME):$(BACKEND_TAG) $(DOCKER_USERNAME)/$(BACKEND_IMAGE_NAME):$(BACKEND_TAG)
 
-# Push the Docker image for the backend
 push-backend:
 	docker push $(DOCKER_USERNAME)/$(BACKEND_IMAGE_NAME):$(BACKEND_TAG)
 
-# Combined command to build, tag, and push the backend Docker image
 all-backend: build-backend tag-backend push-backend
 
-# Clean up local backend images (optional)
-clean-backend:
-	docker rmi $(BACKEND_IMAGE_NAME):$(BACKEND_TAG) $(DOCKER_USERNAME)/$(BACKEND_IMAGE_NAME):$(BACKEND_TAG)
-
-# Clean up both frontend and backend images
 clean: clean-frontend clean-backend
 
-# Run all for both frontend and backend in parallel
 all: frontend backend
 
 .PHONY: build-frontend tag-frontend push-frontend all-frontend clean-frontend \
@@ -421,13 +382,9 @@ all: frontend backend
   ```
 
 - To build, tag, and push **both** images in parallel:
+
   ```bash
   make all
-  ```
-
-- To clean both frontend and backend Docker images:
-  ```bash
-  make clean
   ```
 
 Modify the `DOCKER_USERNAME`, `Image_Name` variable with your DockerHub username and image name for actual deployment.
