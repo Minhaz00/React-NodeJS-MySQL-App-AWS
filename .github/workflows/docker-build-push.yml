@@ -1,0 +1,66 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+
+jobs:
+  # Define the build job
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Docker Buildx for multi-platform builds (optional but recommended)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 3: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Step 4: Determine which directories have changed (frontend, backend, or both)
+      - name: Check for frontend and backend changes
+        id: changes
+        run: |
+          # Check if frontend changed
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^frontend/' > /dev/null; then
+            echo "frontend_changed=true" >> $GITHUB_ENV
+          fi
+
+          # Check if backend changed
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' > /dev/null; then
+            echo "backend_changed=true" >> $GITHUB_ENV
+          fi
+
+      # Step 5: Conditionally run the appropriate make command
+      - name: Build and Push Docker Images
+        run: |
+          if [[ "$frontend_changed" == "true" && "$backend_changed" == "true" ]]; then
+            echo "Both frontend and backend have changed, running 'make all'."
+            make all
+          elif [[ "$frontend_changed" == "true" ]]; then
+            echo "Frontend has changed, running 'make all-frontend'."
+            make all-frontend
+          elif [[ "$backend_changed" == "true" ]]; then
+            echo "Backend has changed, running 'make all-backend'."
+            make all-backend
+          else
+            echo "No changes detected in frontend or backend directories, skipping build."
+            exit 0
