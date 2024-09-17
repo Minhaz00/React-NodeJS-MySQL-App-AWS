@@ -1,5 +1,5 @@
 # Variables
-DOCKER_USERNAME = your-dockerhub-username
+DOCKER_USERNAME = konami98
 
 # Frontend Variables
 FRONTEND_IMAGE_NAME = React-frontend
