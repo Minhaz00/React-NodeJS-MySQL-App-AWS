@@ -7,6 +7,8 @@ In this lab, we will guide you through the creation of a basic full-stack applic
 - Both the frontend and backend are `dockerized` using Docker.
 - The `Images` are built and pushed to DockerHub using a `Makefile`.
 
+![alt text](./images/image-11.png)
+
 Overall Project directory:
 
 ```sh
@@ -46,6 +48,8 @@ cd backend
 npm init -y
 ```
 
+![alt text](./images/image.png)
+
 This will create a `package.json` file.
 
 ### 1.3. Install Dependencies
@@ -54,6 +58,8 @@ Install `express` to handle server routing.
 ```bash
 npm install express cors
 ```
+
+![alt text](./images/image-1.png)
 
 ### 1.4. Create `index.js` for the Backend
 
@@ -283,7 +289,7 @@ all-frontend: build-frontend tag-frontend push-frontend
 ```
 - **`all-frontend` Target**: This is a combined target that calls the `build-frontend`, `tag-frontend`, and `push-frontend` targets sequentially, effectively building, tagging, and pushing the Docker image in one command.
 
-- **`clean-frontend` Target**: This target deletes (`rmi`) the Docker images (both local and tagged versions) for the frontend. It's useful for freeing up space.
+![alt text](./images/image-8.png)
 
 #### Backend Section
 
@@ -310,6 +316,8 @@ push-backend:
 all-backend: build-backend tag-backend push-backend
 ```
 - Backend build, tag, push, and clean targets work the same way as the frontend targets but for the backend image.
+
+![alt text](./images/image-10.png)
 
 ```makefile
 # Run all for both frontend and backend in parallel
@@ -369,8 +377,19 @@ all: frontend backend
 .PHONY: build-frontend tag-frontend push-frontend all-frontend clean-frontend \
         build-backend tag-backend push-backend all-backend clean-backend clean all
 ```
+Modify the `DOCKER_USERNAME`, `Image_Name` variable with your DockerHub username and image name for actual deployment.
+
+![alt text](./images/image-2.png)
 
 ### How to Use:
+- First Login into Docker hub
+  ```sh
+  docker login
+  ```
+  Provide the credentials as needed.
+
+  ![alt text](./images/image-7.png)
+
 - To build, tag, and push the **frontend** image:
   ```bash
   make all-frontend
@@ -387,7 +406,17 @@ all: frontend backend
   make all
   ```
 
-Modify the `DOCKER_USERNAME`, `Image_Name` variable with your DockerHub username and image name for actual deployment.
+  ![alt text](./images/image-3.png)
+
+### Check the created images
+
+After completion of the make command, you can check if docker images:
+
+```sh
+docker images
+```
+
+![alt text](./images/image-4.png)
 
 ## Step 4: Running the Application
 
@@ -397,10 +426,12 @@ Now that we have Docker images for both the frontend and backend, let's run the 
 Run the backend image:
 
 ```bash
-docker run -p 5000:5000 your-dockerhub-username/<backend-image-name>
+docker run -p 4000:4000 your-dockerhub-username/<backend-image-name>
 ```
 
-This will run the backend server on port 5000.
+![alt text](./images/image-5.png)
+
+This will run the backend server on port 4000.
 
 ### 4.2. Run the Frontend
 Run the frontend image:
@@ -410,6 +441,8 @@ docker run -p 80:80 your-dockerhub-username/<frontend-image-name>
 ```
 
 This will run the frontend on port 80.
+
+![alt text](./images/image-6.png)
 
 ---
 
