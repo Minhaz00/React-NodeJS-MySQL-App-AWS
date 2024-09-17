@@ -28,7 +28,7 @@ Full-stack-app
 
 Let's break it down step by step.
 
----
+
 
 ## Step 1: Setting Up the Backend (Node.js with Express)
 
@@ -115,7 +115,7 @@ EXPOSE 5000
 # Start the server
 CMD ["node", "index.js"]
 ```
----
+
 
 ## Step 2: Setting Up the Frontend (React)
 
@@ -202,7 +202,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 This Dockerfile uses a multi-stage build. The first stage builds the React app, and the second stage uses Nginx to serve the static files.
 
----
+
 
 ## Step 3: Writing the `Makefile`
 
@@ -454,7 +454,7 @@ docker run -p 80:80 your-dockerhub-username/<frontend-image-name>
 
 This will run the frontend on port 80.
 
----
+
 
 ## Conclusion
 
