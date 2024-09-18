@@ -64,3 +64,5 @@ jobs:
           else
             echo "No changes detected in frontend or backend directories, skipping build."
             exit 0
+          fi  # <-- This was missing
+
