@@ -18,33 +18,39 @@ jobs:
   # Define the build job
   build-and-push:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
       # Step 1: Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Docker Buildx for multi-platform builds (optional but recommended)
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
-      # Step 3: Log in to Docker Hub
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Login to Docker Hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
       # Step 4: Build and push the frontend Docker image if there are changes in the frontend directory
       - name: Build and Push Frontend Image
-        if: contains(github.event.head_commit.message, 'frontend') || contains(github.event.commits.*.modified, 'frontend/')
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest ./frontend
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^frontend/' > /dev/null; then
+            echo "Changes detected in frontend, building and pushing Docker image."
+            cd ./frontend
+            docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest ./frontend
+            docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+          else
+            echo "No changes in frontend directory, skipping."
+          fi
 
       # Step 5: Build and push the backend Docker image if there are changes in the backend directory
       - name: Build and Push Backend Image
-        if: contains(github.event.head_commit.message, 'backend') || contains(github.event.commits.*.modified, 'backend/')
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:latest ./backend
-          docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' > /dev/null; then
+            echo "Changes detected in backend, building and pushing Docker image."
+            cd ./backend
+            docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:latest ./backend
+            docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+          else
+            echo "No changes in backend directory, skipping."
+          fi
