@@ -2,6 +2,17 @@
 
 This document guides you through deploying a full-stack application with a React frontend, Node.js backend, and MySQL database on Amazon EKS (Elastic Kubernetes Service).
 
+After we create our app, we will create a EKS Cluster in AWS.
+
+![alt text](./images/image.png)
+
+Then we will deploy our app in the cluster by applying the manifests. 
+
+![alt text](./images/image-1.png)
+
+
+
+
 ## Steps Overview
 2. Create a React app, dockerize it and push image.
 3. Create a Node.js app, dockerize it and push image.
@@ -1007,6 +1018,8 @@ Create the following Kubernetes manifests:
    ```
 
 2. Open the React app using the React service LoadBalancer URL.
+
+    ![alt text](./images/image-2.png)
 
 3. Test the full stack by interacting with the React frontend, which communicates with the Node.js API and MySQL database.
 
