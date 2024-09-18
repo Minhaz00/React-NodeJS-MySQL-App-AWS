@@ -1,5 +1,5 @@
 # Variables
-DOCKER_USERNAME = konami98
+DOCKER_USERNAME = minhaz71
 
 # Frontend Variables
 FRONTEND_IMAGE_NAME = React-frontend
