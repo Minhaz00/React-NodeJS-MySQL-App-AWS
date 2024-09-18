@@ -11,12 +11,13 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// We have two base routes 
 app.use('/', homeRoutes);
 app.use('/users', userRoutes);
 
 
-const startServer = async () => {
-    // sync database and listen on port 
+const startServer = async () => { 
     try {
         await db.sequelize.sync();
         console.log("Database synced successfully.");
